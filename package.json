@@ -1,6 +1,6 @@
 {
   "name": "expo-keycloak-auth",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "expo-auth-session wrapper for keycloak authentication",
   "author": "rubhiauliatirtacom",
   "license": "MIT",
