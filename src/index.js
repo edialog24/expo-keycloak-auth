@@ -1,3 +1,3 @@
-export * from './KeycloakProvider';
-export * from './useKeycloak';
-export * from './const';
+export * from './src/KeycloakProvider';
+export * from './src/useKeycloak';
+export * from './src/const';
