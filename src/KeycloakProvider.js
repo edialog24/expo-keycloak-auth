@@ -38,13 +38,13 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,s
   const config = { redirectUri, clientId, realm, url, extraParams, scopes }
 
   const [request, response, promptAsync] = useAuthRequest(
-    { usePKCE: true, ...config },
+    { usePKCE: false, ...config },
     discovery,
   );
   const [currentToken, updateToken] = useTokenStorage(options, config, discovery)
 
   const handleLogin = useCallback((handler) => {
-    return promptAsync();
+    return promptAsync({showInRecents: true});
   }, [request])
 
   const handleLogout = () => {
