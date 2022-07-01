@@ -11,9 +11,10 @@ import { handleTokenExchange, getRealmURL } from './helpers';
 import {
   NATIVE_REDIRECT_PATH,
 } from './const';
-import * as WebBrowser from 'expo-web-browser';
 
-WebBrowser.maybeCompleteAuthSession();
+//import * as WebBrowser from 'expo-web-browser';
+
+//WebBrowser.maybeCompleteAuthSession();
 // export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
 //   clientId: string;
 //   disableAutoRefresh?: boolean;
@@ -37,7 +38,7 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,s
   const config = { redirectUri, clientId, realm, url, extraParams, scopes }
 
   const [request, response, promptAsync] = useAuthRequest(
-    { usePKCE: false, ...config },
+    { usePKCE: true, ...config },
     discovery,
   );
   const [currentToken, updateToken] = useTokenStorage(options, config, discovery)
