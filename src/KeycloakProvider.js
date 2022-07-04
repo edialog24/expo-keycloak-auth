@@ -26,13 +26,13 @@ import {
 //   url: string;
 // }
 
-
+const useProxy = true;
 export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,scopes=["openid","profile","email"],  ...options }) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
   const redirectUri = AuthSession.makeRedirectUri({
     native: `${options.scheme ?? 'exp'}://${options.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
-    useProxy: !options.scheme,
+    useProxy: useProxy,
   });
 
   const config = { redirectUri, clientId, realm, url, extraParams, scopes }
@@ -44,7 +44,7 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,s
   const [currentToken, updateToken] = useTokenStorage(options, config, discovery)
 
   const handleLogin = useCallback((handler) => {
-    return promptAsync({showInRecents: true});
+    return promptAsync({useProxy: useProxy, showInRecents: true});
   }, [request])
 
   const handleLogout = () => {
