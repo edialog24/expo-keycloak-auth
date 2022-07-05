@@ -12,7 +12,7 @@ import {
   NATIVE_REDIRECT_PATH,
 } from './const';
 
-//import * as WebBrowser from 'expo-web-browser';
+import * as WebBrowser from 'expo-web-browser';
 
 //WebBrowser.maybeCompleteAuthSession();
 // export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
@@ -26,12 +26,11 @@ import {
 //   url: string;
 // }
 
-const useProxy = true;
+const useProxy = Platform.select({ web: false, default: true });
 export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,scopes=["openid","profile","email"],  ...options }) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
   const redirectUri = AuthSession.makeRedirectUri({
-    native: `${options.scheme ?? 'exp'}://${options.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
     useProxy: useProxy,
   });
 
