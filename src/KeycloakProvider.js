@@ -25,7 +25,7 @@ import * as WebBrowser from 'expo-web-browser';
 //   tokenStorageKey?: string;
 //   url: string;
 // }
-
+console.log("Keycloak provider 1.1.17");
 const useProxy = Platform.select({ web: false, default: true });
 export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,scopes=["openid","profile","email"],  ...options }) => {
 
