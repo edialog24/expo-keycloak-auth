@@ -1,13 +1,14 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect,useState } from 'react';
 import { Platform } from 'react-native'
 import * as AuthSession from 'expo-auth-session';
+import {View} from "react-native";
 import {
   useAuthRequest,
   useAutoDiscovery,
 } from 'expo-auth-session';
 import { KeycloakContext } from './KeycloakContext';
 import useTokenStorage from './useTokenStorage';
-import { handleTokenExchange, getRealmURL } from './helpers';
+import { handleTokenExchange, getRealmURL, generateChallenge } from './helpers';
 import {
   NATIVE_REDIRECT_PATH,
 } from './const';
@@ -25,20 +26,31 @@ import * as WebBrowser from 'expo-web-browser';
 //   tokenStorageKey?: string;
 //   url: string;
 // }
-console.log("Keycloak provider 1.1.17");
-const useProxy = Platform.select({ web: false, default: true });
-export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,scopes=["openid","profile","email"],  ...options }) => {
+
+const useProxy = Platform.select({ web: false, default: false });
+export const Continue = ({ realm, clientId, url,code, extraParams, children,scopes=["openid","profile","email"],  ...options }) => {
 
   const discovery = useAutoDiscovery(getRealmURL({ realm, url }));
-  const redirectUri = AuthSession.makeRedirectUri({
+  const redirectUri =AuthSession.makeRedirectUri({
+    native: `${options.scheme ?? 'exp'}://${options.nativeRedirectPath ?? NATIVE_REDIRECT_PATH}`,
     useProxy: useProxy,
   });
 
-  const config = { redirectUri, clientId, realm, url, extraParams, scopes }
+
+  const config = {
+    redirectUri,
+    clientId,
+    realm,
+    url,
+    extraParams: {...extraParams,code_verifier: code.codeVerifier,code_challenge: code.codeChallenge, app_callback_uri:redirectUri  },
+    scopes,
+    usePKCE: true,
+    codeChallengeMethod: 'S256'
+  }
 
   const [request, response, promptAsync] = useAuthRequest(
-    { usePKCE: false, ...config },
-    discovery,
+      config,
+      discovery,
   );
   const [currentToken, updateToken] = useTokenStorage(options, config, discovery)
 
@@ -51,7 +63,7 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,s
     try {
       if (discovery.revocationEndpoint) {
         AuthSession.revokeAsync(
-          { token: currentToken?.accessToken, ...config }, discovery
+            { token: currentToken?.accessToken, ...config }, discovery
         )
       }
       if(discovery.endSessionEndpoint) {
@@ -74,21 +86,29 @@ export const KeycloakProvider = ({ realm, clientId, url, extraParams, children,s
   useEffect(() => {
     if (response) {
       handleTokenExchange({ response, discovery, config })
-        .then(updateToken)
+          .then(updateToken)
     }
   }, [response])
 
   return (
-    <KeycloakContext.Provider
-      value={{
-        isLoggedIn: currentToken === undefined ? undefined : !!currentToken,
-        login: handleLogin,
-        logout: handleLogout,
-        ready: discovery !== null && request !== null && currentToken !== undefined,
-        token: currentToken
-      }}
-    >
-      {children}
-    </KeycloakContext.Provider>
+      <KeycloakContext.Provider
+          value={{
+            isLoggedIn: currentToken === undefined ? undefined : !!currentToken,
+            login: handleLogin,
+            logout: handleLogout,
+            ready: discovery !== null && request !== null && currentToken !== undefined,
+            token: currentToken
+          }}
+      >
+        {children}
+      </KeycloakContext.Provider>
   );
 };
+export const KeycloakProvider = (props) => {
+  const [challenge, setChallenge] = useState();
+  useEffect(() => {
+    generateChallenge().then((c) => setChallenge(c))
+  },[])
+  if(!challenge) return <View></View>
+  return <Continue {...props} code={challenge}></Continue>
+}
