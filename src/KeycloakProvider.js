@@ -15,7 +15,7 @@ import {
 
 import * as WebBrowser from 'expo-web-browser';
 
-//WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession();
 // export interface IKeycloakConfiguration extends Partial<AuthRequestConfig> {
 //   clientId: string;
 //   disableAutoRefresh?: boolean;
